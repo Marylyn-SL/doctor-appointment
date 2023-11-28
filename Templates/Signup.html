@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <title>Sign Up</title>
+</head>
+
+<body>
+    <h1>Sign Up</h1>
+
+    <form method="POST" action="{{ url_for('signup') }}">
+        <label for="username">Username:</label>
+        <input type="text" name="username" required><br>
+        <label for="password">Password:</label>
+        <input type="password" name="password" required><br>
+        <label for="name">Full Name:</label>
+        <input type="text" name="name" required><br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" required><br>
+        <label for="type">User Type:</label>
+        <select id="type" name="type" required>
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+        </select><br>
+
+        <div id="medicalLicenseField" style="display: none;">
+            <label for="medicalLicense">Medical License Number:</label>
+            <input type="text" id="medicalLicense" name="medical_license">
+        </div>
+        <div id="doctorSpecializationField" style="display: none;">
+            <label for="dr_specialization">Specialization:</label>
+            <input type="text" id="dr_specialization" name="dr_specialization">
+        </div>
+
+        <button type="submit">Sign Up</button>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+    </form>
+
+</body>
+</html>

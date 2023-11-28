@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <title>Doctor Appointment</title>
+</head>
+
+<body>
+    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}">
+        <h1>Welcome, {{ current_user.username }}!</h1>
+        <button onclick="openAppointmentForm()">Add Appointment</button>
+    </div>
+    <div id="appointment-form" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAppointmentForm()">&times;</span>
+            <h2>Add Appointment</h2>
+
+            <form id="appointmentForm" action="{{ url_for('add_appointment') }}" method="post">
+                <label for="datetime">Date/Time:</label>
+                <input type="datetime-local" id="datetime" name="datetime" required><br>
+
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Completed">Completed</option>
+                </select><br>
+
+                <input type="hidden" id="patient_id" name="patient_id" value="">
+
+                <label for="doctor_name">Doctor Name:</label>
+                <select id="doctor_name" name="doctor_name" required></select><br>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+    <!-- {% if authenticated %}
+    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}">
+        </div>
+
+
+
+    {% else %}
+        <p>You are not logged in. <a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('signup') }}">Sign Up</a>.</p>
+
+    {% endif %} -->
+    <div id="appointments-list">
+    </div>
+    <div id="doctor-availability">
+    </div>
+</body>
+</html>
