@@ -11,10 +11,26 @@
 </head>
 
 <body>
-    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}">
-        <h1>Welcome, {{ current_user.username }}!</h1>
-        <button onclick="openAppointmentForm()">Add Appointment</button>
+    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}" data-user-type="{{ current_user.type }}">
+    </div>    
+
+    <div id="availability-form" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAvailabilityForm()">&times;</span>
+            <h2>Add Availability</h2>
+
+            <form id="availabilityForm">
+                <label for="start_time">Start Time:</label>
+                <input type="datetime-local" id="start_time" name="start_time" required><br>
+
+                <label for="end_time">End Time:</label>
+                <input type="datetime-local" id="end_time" name="end_time" required><br>
+
+                <button type="button" onclick="addAvailability()">Submit</button>
+            </form>
+        </div>
     </div>
+
     <div id="appointment-form" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAppointmentForm()">&times;</span>
@@ -40,19 +56,11 @@
             </form>
         </div>
     </div>
-    <!-- {% if authenticated %}
-    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}">
-        </div>
 
-
-
-    {% else %}
-        <p>You are not logged in. <a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('signup') }}">Sign Up</a>.</p>
-
-    {% endif %} -->
     <div id="appointments-list">
     </div>
     <div id="doctor-availability">
     </div>
+
 </body>
 </html>

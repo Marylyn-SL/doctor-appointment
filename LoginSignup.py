@@ -49,6 +49,15 @@ class Database:
         params = (guest_id, dr_specialization)
         result = self.execute_query(query, params, fetchall=False)
         return result['dr_id'] if result else None
+    
+    def create_availability(self, doctor_id, avail_starttime, avail_endtime):
+        query = sql.SQL("""
+            INSERT INTO availability (dr_id, avail_starttime, avail_endtime)
+            VALUES (%s, %s, %s);
+        """)
+        params = (doctor_id, avail_starttime, avail_endtime)
+        self.execute_query(query, params, fetchall=False)
+
 
 class Guest(UserMixin):
     def __init__(self, guest_id, guest_username, guest_name, guest_passwd, guest_email, guest_type):
@@ -82,14 +91,6 @@ class Guest(UserMixin):
         query = sql.SQL("SELECT * FROM guest WHERE guest_username = {}").format(sql.Literal(guest_username))
         result = Database(DATABASE_URI).execute_query(query, fetchall=True)
         return cls(**result[0]) if result else None
-    
-    # @classmethod
-    # def load_guest(guest_id):
-    #     return Guest.find_by_id(Database(DATABASE_URI), guest_id))
-
-    # def find_by_username(cls, DATABASE_URI, guest_username):
-    #     guest = load_guest(Database(DATABASE_URI, guest_username))
-    #     return guest
 
     
 

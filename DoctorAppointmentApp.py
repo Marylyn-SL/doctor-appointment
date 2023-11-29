@@ -4,6 +4,7 @@ from psycopg2.extras import RealDictCursor
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from LoginSignup import Database, Guest
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -101,8 +102,11 @@ def signup():
 
     return render_template('signup.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if (current_user.is_authenticated):
+        return redirect(url_for('index'))
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -117,13 +121,28 @@ def login():
 
     return render_template('login.html')
 
-
-@login_required
 @app.route('/')
 def index():
     app.logger.info(f"Current user: {current_user}")
     return render_template('index.html', authenticated=current_user.is_authenticated)
 
+@app.route('/add_availability', methods=['POST'])
+@login_required
+def add_availability():
+    if current_user.type != 'doctor':
+        flash('You do not have permission to add availability.', 'error')
+        return redirect(url_for('index'))
+
+    doctor_id = request.form['doctor_id']
+    start_time = request.form['start_time']
+    end_time = request.form['end_time']
+    
+    datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S')
+    datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S')
+    
+    Database(DATABASE_URI).create_availability(doctor_id, start_time, end_time)
+
+    return jsonify({'message': 'Availability added successfully'})
 
 @app.route('/appointments/json')
 def fetch_appointments_json():

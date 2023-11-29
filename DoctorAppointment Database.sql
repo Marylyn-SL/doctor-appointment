@@ -34,29 +34,3 @@ CREATE TABLE Availability (
     avail_endtime TIMESTAMP NOT NULL,
     dr_id INT REFERENCES Doctor(dr_id)
 );
-
--- Example
-INSERT INTO Guest (guest_id, guest_name, guest_passwd, guest_email, guest_type)
-VALUES (
-    1, 'marylyn slim', 1234, 'marylyn@gmail.com', 'patient' 
-);
-
-INSERT INTO Guest (guest_id, guest_name, guest_passwd, guest_email, guest_type)
-VALUES (
-    2, 'elias ghali', 4321, 'elias@gmail.com', 'doctor' 
-);
-
-INSERT INTO Patient (pt_id, guest_id)
-VALUES (
-    1, 1
-);
-
-INSERT INTO Doctor (dr_id, dr_specialization, guest_id)
-VALUES (
-    2, 'dentist', 2
-);
-
-INSERT INTO Appointment (appt_id, appt_datetime, appt_status, pt_id, dr_id)
-VALUES (
-    20, '2023-11-14 07:00:00', 'PENDING', 1, 2
-);

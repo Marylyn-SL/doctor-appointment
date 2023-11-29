@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(doctorsData => {
             doctors = doctorsData;
-            // fillDoctorsDropdown(doctors);
         });
 
         const roleSelect = document.getElementById('type');
@@ -26,7 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 });
 
-function isAuthenticated() {
+function isAuthenticated() { 
+    console.log(current_user)
     return current_user.is_authenticated;
 }
 
@@ -72,18 +72,79 @@ function displayAppointments(appointments) {
 function updateNavbar() {
     const navbar = document.getElementById('navbar');
     const isAuthenticated = navbar.getAttribute('data-authenticated') === 'True';
+    const userType = navbar.getAttribute('data-user-type');
 
     if (isAuthenticated) {
         const username = navbar.getAttribute('data-username');
-        navbar.innerHTML = `
-            <p>Welcome, ${username}!</p>
-            <a href="/logout">Logout</a>
-        `;
+
+        if (userType === 'doctor') {
+            navbar.innerHTML = `
+                <p>Welcome, ${username}!</p>
+                <button onclick="openAppointmentForm()">Add Appointment</button>
+                <button onclick="openAvailabilityForm()">Add Availability</button>
+                <a href="/logout">Logout</a>
+            `;
+            openAvailabilityForm();
+        } else {
+            navbar.innerHTML = `
+                <p>Welcome, ${username}!</p>
+                <button onclick="openAppointmentForm()">Add Appointment</button>
+                <a href="/logout">Logout</a>
+            `;
+        }
     } else {
         navbar.innerHTML = `
             <p>You are not logged in. <a href="/login">Login</a> or <a href="/signup">Sign Up</a>.</p>
         `;
     }
+}
+
+function getCurrentUserDoctorId() {
+    const authenticated = isAuthenticated();
+    if (authenticated && current_user.type === 'doctor') {
+        return current_user.doctor_id;
+    }
+    return null;
+}
+
+function openAvailabilityForm() {
+    var x = document.getElementById("availability-form");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+
+function closeAvailabilityForm() {
+    document.getElementById('availability-form').style.display = "none";
+}
+
+function addAvailability() {
+    const startTime = document.getElementById('start_time').value;
+    const endTime = document.getElementById('end_time').value;
+    const doctorId = getCurrentUserDoctorId();
+
+    fetch('/add_availability', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            start_time: startTime,
+            end_time: endTime,
+            doctor_id: doctorId,
+        }),
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Availability added:', result);
+        closeAvailabilityForm();
+        fetchDoctorAvailability(doctorId);
+    })
+    .catch(error => {
+        console.error('Error adding availability:', error);
+    });
 }
 
 function openAppointmentForm() {
@@ -98,6 +159,7 @@ function openAppointmentForm() {
     } else {
         x.style.display = "none";
     }
+    fillDoctorsDropdown()
 }
 
 function fillDoctorsDropdown() {
