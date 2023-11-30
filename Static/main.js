@@ -7,6 +7,14 @@ document.addEventListener("DOMContentLoaded", function () {
             displayAppointments(appointments);
             updateNavbar();
         });
+
+        const flashMessages = document.querySelector(".flash-messages");
+        if (flashMessages) {
+        setTimeout(() => {
+            flashMessages.style.display = "none";
+        }, 1000);
+        }
+
     fetch('/doctors/json')
         .then(response => response.json())
         .then(doctorsData => {
@@ -76,25 +84,41 @@ function updateNavbar() {
 
     if (isAuthenticated) {
         const username = navbar.getAttribute('data-username');
+        const guestName = navbar.getAttribute('data-guest-name') || username;
 
         if (userType === 'doctor') {
             navbar.innerHTML = `
-                <p>Welcome, ${username}!</p>
-                <button onclick="openAppointmentForm()">Add Appointment</button>
-                <button onclick="openAvailabilityForm()">Add Availability</button>
-                <a href="/logout">Logout</a>
+            <div class="user-info">
+                <p>Welcome, ${guestName}!</p>
+            </div>               
+            <div class="text-center mb-4">
+                <button onclick="openAvailabilityForm()" class="btn btn-success">Add Availability</button>
+            </div>
+
+            <div class="text-center">
+                <a href="/logout" class="btn btn-outline-danger">Logout</a>
+            </div>
             `;
             openAvailabilityForm();
         } else {
             navbar.innerHTML = `
-                <p>Welcome, ${username}!</p>
-                <button onclick="openAppointmentForm()">Add Appointment</button>
-                <a href="/logout">Logout</a>
+            <div class="user-info">
+                <p>Welcome, ${guestName}!</p>
+            </div>
+            <div class="text-center mb-4">
+                <button onclick="openAppointmentForm()" class="btn btn-primary">Add Appointment</button>
+            </div>
+            <div class="text-center">
+                <a href="/logout" class="btn btn-outline-danger">Logout</a>
+            </div>     
             `;
+            openAvailabilityForm();
         }
     } else {
         navbar.innerHTML = `
+        <div class="user-info">
             <p>You are not logged in. <a href="/login">Login</a> or <a href="/signup">Sign Up</a>.</p>
+        <div>
         `;
     }
 }
@@ -156,6 +180,13 @@ function openAppointmentForm() {
         if (patientIdInput) {
             patientIdInput.value = current_user.id;
         }
+        const appointmentDatetimeInput = document.getElementById('datetime');
+        if (appointmentDatetimeInput) {
+            const appointmentDatetime = new Date(appointmentDatetimeInput.value);
+            const status = appointmentDatetime < new Date() ? 'Completed' : 'Scheduled';
+            console.log('Status:', status);
+        }
+
     } else {
         x.style.display = "none";
     }

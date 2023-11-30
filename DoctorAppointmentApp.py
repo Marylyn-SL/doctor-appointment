@@ -114,7 +114,6 @@ def login():
 
         if guest and check_password_hash(guest.password.strip(), password):
             login_user(guest)
-            flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid username or password', 'error')
@@ -123,14 +122,13 @@ def login():
 
 @app.route('/')
 def index():
-    app.logger.info(f"Current user: {current_user}")
-    return render_template('index.html', authenticated=current_user.is_authenticated)
+    guest_name = current_user.name if current_user.is_authenticated else ''
+    return render_template('index.html', authenticated=current_user.is_authenticated, guest_name=guest_name)
 
 @app.route('/add_availability', methods=['POST'])
 @login_required
 def add_availability():
     if current_user.type != 'doctor':
-        flash('You do not have permission to add availability.', 'error')
         return redirect(url_for('index'))
 
     doctor_id = request.form['doctor_id']
@@ -162,16 +160,20 @@ def fetch_doctor_availability_json(doctor_id):
 @app.route('/add_appointment', methods=['POST'])
 def add_appointment():
     datetime = request.form['datetime']
-    status = request.form['status']
+    status = "Scheduled"
     patient_id = request.form['patient_id']
     doctor_id = request.form['doctor_id']
+
+    appointment_datetime = datetime.strptime(appointment_datetime, '%Y-%m-%dT%H:%M')
+    if appointment_datetime < datetime.now():
+        status = "Completed"
 
     query = """
     INSERT INTO appointment (appt_datetime, appt_status, pt_id, dr_id)
     VALUES (%s, %s, %s, %s);
     """
 
-    params = (datetime, status, patient_id, doctor_id)
+    params = (appointment_datetime, status, patient_id, doctor_id)
 
     execute_query(query, params)
 

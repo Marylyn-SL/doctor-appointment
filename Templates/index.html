@@ -5,55 +5,71 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='main.js') }}"></script>
     <title>Doctor Appointment</title>
 </head>
 
 <body>
-    <div id="navbar" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}" data-user-type="{{ current_user.type }}">
+    <div id="navbar" class="navbar-expand-lg navbar-light bg-light" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}" data-guest-name="{{ guest_name }}" data-user-type="{{ current_user.type }}">
     </div>    
 
-    <div id="availability-form" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAvailabilityForm()">&times;</span>
-            <h2>Add Availability</h2>
+    {% block content %}
+    {% endblock %}
 
-            <form id="availabilityForm">
-                <label for="start_time">Start Time:</label>
-                <input type="datetime-local" id="start_time" name="start_time" required><br>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div id="flash-messages" class="container mt-4">
+                <ul class="flash-messages list-unstyled">
+                    {% for message in messages %}
+                        <li class="alert alert-info">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
 
-                <label for="end_time">End Time:</label>
-                <input type="datetime-local" id="end_time" name="end_time" required><br>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="availability-form" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeAvailabilityForm()">&times;</span>
+                        <h2>Add Availability</h2>
 
-                <button type="button" onclick="addAvailability()">Submit</button>
-            </form>
-        </div>
-    </div>
+                        <form id="availabilityForm">
+                            <label for="start_time">Start Time:</label>
+                            <input type="datetime-local" id="start_time" name="start_time" required><br>
 
-    <div id="appointment-form" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAppointmentForm()">&times;</span>
-            <h2>Add Appointment</h2>
+                            <label for="end_time">End Time:</label>
+                            <input type="datetime-local" id="end_time" name="end_time" required><br>
 
-            <form id="appointmentForm" action="{{ url_for('add_appointment') }}" method="post">
-                <label for="datetime">Date/Time:</label>
-                <input type="datetime-local" id="datetime" name="datetime" required><br>
+                            <button type="button" onclick="addAvailability()" class="btn btn-success">Submit</button>
+                        </form>
+                    </div>
+                </div>
 
-                <label for="status">Status:</label>
-                <select id="status" name="status" required>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Cancelled">Cancelled</option>
-                    <option value="Completed">Completed</option>
-                </select><br>
+                <div id="appointment-form" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeAppointmentForm()">&times;</span>
+                        <h2>Add Appointment</h2>
 
-                <input type="hidden" id="patient_id" name="patient_id" value="">
+                        <form id="appointmentForm" action="{{ url_for('add_appointment') }}" method="post">
+                            <label for="datetime">Date/Time:</label>
+                            <input type="datetime-local" id="datetime" name="datetime" required><br>
+                            <input type="hidden" id="patient_id" name="patient_id" value="">
+                            <label for="doctor_name">Doctor Name:</label>
+                            <select id="doctor_name" name="doctor_name" required></select><br>
 
-                <label for="doctor_name">Doctor Name:</label>
-                <select id="doctor_name" name="doctor_name" required></select><br>
-
-                <button type="submit">Submit</button>
-            </form>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
