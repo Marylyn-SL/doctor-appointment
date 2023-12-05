@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
-from LoginSignup import Database, Guest
+from LoginSignup import Database, Guest, Patient, Doctor
 from datetime import datetime
 
 app = Flask(__name__)
@@ -123,24 +123,27 @@ def login():
 @app.route('/')
 def index():
     guest_name = current_user.name if current_user.is_authenticated else ''
-    return render_template('index.html', authenticated=current_user.is_authenticated, guest_name=guest_name)
+    return render_template('index.html', authenticated=current_user.is_authenticated, guest_name=guest_name, current_user=current_user)
 
 @app.route('/add_availability', methods=['POST'])
 @login_required
 def add_availability():
-    if current_user.type != 'doctor':
-        return redirect(url_for('index'))
+    try:
+        guest_id = int(request.json['guest_id'])
+        start_time = datetime.strptime(request.json['start_time'], '%Y-%m-%dT%H:%M')
+        end_time = datetime.strptime(request.json['end_time'], '%Y-%m-%dT%H:%M')
+        doctor = Doctor.find_by_guest_id(DATABASE_URI, guest_id)
+    except (KeyError, ValueError) as e:
+        return jsonify({'error': 'Invalid data format'}), 400
 
-    doctor_id = request.form['doctor_id']
-    start_time = request.form['start_time']
-    end_time = request.form['end_time']
-    
-    datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S')
-    datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S')
-    
-    Database(DATABASE_URI).create_availability(doctor_id, start_time, end_time)
+    success = Database(DATABASE_URI).create_availability(doctor.id, start_time, end_time)
 
-    return jsonify({'message': 'Availability added successfully'})
+    if success:
+        flash('Availability added successfully.', 'success')
+        return jsonify({'message': 'Availability added successfully', 'doctorId': str(doctor.id)}), 200
+    else:
+        flash('Error adding availability. Please try again.', 'error')
+        return jsonify({'error': 'Error adding availability. Please try again.'}), 400
 
 @app.route('/appointments/json')
 def fetch_appointments_json():

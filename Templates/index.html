@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <div id="navbar" class="navbar-expand-lg navbar-light bg-light" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}" data-guest-name="{{ guest_name }}" data-user-type="{{ current_user.type }}">
+    <div id="navbar" class="navbar-expand-lg navbar-light bg-light" data-id="{{ current_user.id }}" data-authenticated="{{ current_user.is_authenticated }}" data-username="{{ current_user.username }}" data-guest-name="{{ guest_name }}" data-user-type="{{ current_user.type }}">
     </div>    
 
     {% block content %}

@@ -16,7 +16,7 @@ class Database:
             if fetchall:
                 result = self.cursor.fetchall()
             else:
-                result = None
+                result = True
             
             self.connection.commit()
 
@@ -56,7 +56,7 @@ class Database:
             VALUES (%s, %s, %s);
         """)
         params = (doctor_id, avail_starttime, avail_endtime)
-        self.execute_query(query, params, fetchall=False)
+        return self.execute_query(query, params, fetchall=False)
 
 
 class Guest(UserMixin):
@@ -92,5 +92,25 @@ class Guest(UserMixin):
         result = Database(DATABASE_URI).execute_query(query, fetchall=True)
         return cls(**result[0]) if result else None
 
-    
+class Doctor(UserMixin):
+    def __init__(self, dr_id, dr_specialization, guest_id):
+        self.id = dr_id
+        self.specialization = dr_specialization
+        self.guest_id = guest_id
 
+    @classmethod
+    def find_by_guest_id(cls, DATABASE_URI, guest_id):
+        query = sql.SQL("SELECT * FROM doctor WHERE guest_id = {}").format(sql.Literal(guest_id))
+        result = Database(DATABASE_URI).execute_query(query, fetchall=True)
+        return cls(**result[0]) if result else None
+
+class Patient(UserMixin):
+    def __init__(self, pt_id, guest_id):
+        self.id = pt_id
+        self.guest_id = guest_id
+
+    @classmethod
+    def find_by_guest_id(cls, DATABASE_URI, guest_id):
+        query = sql.SQL("SELECT * FROM patient WHERE guest_id = {}").format(sql.Literal(guest_id))
+        result = Database(DATABASE_URI).execute_query(query, fetchall=True)
+        return cls(**result[0]) if result else None

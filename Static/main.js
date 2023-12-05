@@ -1,4 +1,7 @@
-let doctors = []
+var doctors = []
+var isAuthenticated = false
+var userType = ''
+var userId
 
 document.addEventListener("DOMContentLoaded", function () {
     fetch('/appointments/json')
@@ -33,15 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 });
 
-function isAuthenticated() { 
-    console.log(current_user)
-    return current_user.is_authenticated;
-}
-
 function displayAppointments(appointments) {
     const appointmentsList = document.getElementById('appointments-list');
-    const navbar = document.getElementById('navbar');
-    const isAuthenticated = navbar.getAttribute('data-authenticated') === 'True';
 
     if(isAuthenticated){
         appointmentsList.innerHTML = '<h2>Appointments</h2>';
@@ -79,8 +75,11 @@ function displayAppointments(appointments) {
 
 function updateNavbar() {
     const navbar = document.getElementById('navbar');
-    const isAuthenticated = navbar.getAttribute('data-authenticated') === 'True';
-    const userType = navbar.getAttribute('data-user-type');
+    if(navbar == null)
+        return
+    userType = navbar.getAttribute('data-user-type');
+    isAuthenticated = navbar.getAttribute('data-authenticated') === 'True';
+    userId = navbar.getAttribute('data-id');
 
     if (isAuthenticated) {
         const username = navbar.getAttribute('data-username');
@@ -123,10 +122,9 @@ function updateNavbar() {
     }
 }
 
-function getCurrentUserDoctorId() {
-    const authenticated = isAuthenticated();
-    if (authenticated && current_user.type === 'doctor') {
-        return current_user.doctor_id;
+function getCurrentUserId() {
+    if (isAuthenticated) {
+        return userId;
     }
     return null;
 }
@@ -147,7 +145,7 @@ function closeAvailabilityForm() {
 function addAvailability() {
     const startTime = document.getElementById('start_time').value;
     const endTime = document.getElementById('end_time').value;
-    const doctorId = getCurrentUserDoctorId();
+    const guestId = getCurrentUserId();
 
     fetch('/add_availability', {
         method: 'POST',
@@ -157,14 +155,14 @@ function addAvailability() {
         body: JSON.stringify({
             start_time: startTime,
             end_time: endTime,
-            doctor_id: doctorId,
+            guest_id: guestId,
         }),
     })
     .then(response => response.json())
     .then(result => {
         console.log('Availability added:', result);
         closeAvailabilityForm();
-        fetchDoctorAvailability(doctorId);
+        fetchDoctorAvailability(result.doctorId);
     })
     .catch(error => {
         console.error('Error adding availability:', error);
