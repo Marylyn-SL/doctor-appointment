@@ -37,8 +37,8 @@ class Database:
             RETURNING pt_id;
         """)
         params = (guest_id,)
-        result = self.execute_query(query, params, fetchall=False)
-        return result['pt_id'] if result else None
+        result = self.execute_query(query, params, fetchall=True)
+        return result[0]['pt_id'] if result else None
 
     def create_doctor(self, guest_id, dr_specialization):
         query = sql.SQL("""
@@ -47,16 +47,17 @@ class Database:
             RETURNING dr_id;
         """)
         params = (guest_id, dr_specialization)
-        result = self.execute_query(query, params, fetchall=False)
-        return result['dr_id'] if result else None
+        result = self.execute_query(query, params, fetchall=True)
+        print(result)
+        return result[0]['dr_id'] if result else None
     
-    def create_availability(self, doctor_id, avail_starttime, avail_endtime):
+    def create_availability(self, doctor_id, avail_day, avail_starttime, avail_endtime, recurrent):
         query = sql.SQL("""
-            INSERT INTO availability (dr_id, avail_starttime, avail_endtime)
-            VALUES (%s, %s, %s);
+            INSERT INTO availability (dr_id, avail_day, avail_starttime, avail_endtime, recurrent)
+            VALUES (%s, %s, %s, %s, %s);
         """)
-        params = (doctor_id, avail_starttime, avail_endtime)
-        return self.execute_query(query, params, fetchall=False)
+        params = (doctor_id, avail_day, avail_starttime, avail_endtime, recurrent)
+        return self.execute_query(query, params)
 
 
 class Guest(UserMixin):
@@ -101,6 +102,12 @@ class Doctor(UserMixin):
     @classmethod
     def find_by_guest_id(cls, DATABASE_URI, guest_id):
         query = sql.SQL("SELECT * FROM doctor WHERE guest_id = {}").format(sql.Literal(guest_id))
+        result = Database(DATABASE_URI).execute_query(query, fetchall=True)
+        return cls(**result[0]) if result else None
+
+    @classmethod
+    def find_by_id(cls, DATABASE_URI, doctor_id):
+        query = sql.SQL("SELECT * FROM doctor WHERE dr_id = {}").format(sql.Literal(doctor_id))
         result = Database(DATABASE_URI).execute_query(query, fetchall=True)
         return cls(**result[0]) if result else None
 

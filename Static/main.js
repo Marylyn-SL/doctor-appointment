@@ -4,18 +4,23 @@ var userType = ''
 var userId
 
 document.addEventListener("DOMContentLoaded", function () {
-    fetch('/appointments/json')
-        .then(response => response.json())
-        .then(appointments => {
-            displayAppointments(appointments);
-            updateNavbar();
-        });
+    updateNavbar();
+    if(userId != null && userId.length > 0 && userType != null && userType.length > 0){
+        fetch(`/appointments/${userId}/json?userType=${userType}`)
+            .then(response => response.json())
+            .then(appointments => {
+                displayAppointments(appointments);
+            });
+    }
+    if(userId != null && userId.length > 0 && userType != null && userType == 'doctor'){
+        fetchDoctorAvailability(userId);
+    }
 
         const flashMessages = document.querySelector(".flash-messages");
         if (flashMessages) {
         setTimeout(() => {
             flashMessages.style.display = "none";
-        }, 1000);
+        }, 2000);
         }
 
     fetch('/doctors/json')
@@ -69,6 +74,44 @@ function displayAppointments(appointments) {
                 </tbody>
             `;
             appointmentsList.appendChild(table);
+        }
+    }
+}
+
+
+function displayAvailability(availabilities) {
+    var availabilitiesList = document.getElementById('appointment-doctor-availability');
+    if(isAuthenticated){
+        if(userType === 'doctor'){
+            availabilitiesList = document.getElementById('doctor-availability');
+        }
+        availabilitiesList.innerHTML = '<h2>Availabilities</h2>';
+        if (availabilities.length === 0) {
+            availabilitiesList.innerHTML += '<p>No availabilities available.</p>';
+        } else {
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Availability ID</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Recurrent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${availabilities.map(availability => `
+                        <tr>
+                            <td>${availability.avail_id}</td>
+                            <td>${availability.avail_day}</td>
+                            <td>${availability.avail_starttime}</td>
+                            <td>${availability.avail_endtime}</td>
+                            <td>${availability.recurrent}</td>
+                        </tr>`).join('')}
+                </tbody>
+            `;
+            availabilitiesList.appendChild(table);
         }
     }
 }
@@ -143,9 +186,11 @@ function closeAvailabilityForm() {
 }
 
 function addAvailability() {
+    const availDay = document.getElementById('avail_day').value;
     const startTime = document.getElementById('start_time').value;
     const endTime = document.getElementById('end_time').value;
     const guestId = getCurrentUserId();
+    const recurrent = document.getElementById('recurrent').value;
 
     fetch('/add_availability', {
         method: 'POST',
@@ -153,9 +198,11 @@ function addAvailability() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+            avail_day: availDay,
             start_time: startTime,
             end_time: endTime,
             guest_id: guestId,
+            recurrent: recurrent
         }),
     })
     .then(response => response.json())
@@ -174,10 +221,11 @@ function openAppointmentForm() {
     if (x.style.display === "none") {
         x.style.display = "block";
 
-        const patientIdInput = document.getElementById('patient_id');
-        if (patientIdInput) {
-            patientIdInput.value = current_user.id;
-        }
+        // const patientIdInput = document.getElementById('patient_id');
+        document.getElementById('patient_id').value = getCurrentUserId()
+        // if (patientIdInput) {
+        //     patientIdInput.value = current_user.id;
+        // }
         const appointmentDatetimeInput = document.getElementById('datetime');
         if (appointmentDatetimeInput) {
             const appointmentDatetime = new Date(appointmentDatetimeInput.value);
@@ -213,15 +261,18 @@ function fillDoctorsDropdown() {
 
     doctorsDropdown.addEventListener('change', function () {
         const selectedOption = this.options[this.selectedIndex];
-        const doctorId = selectedOption.getAttribute('data-doctor-id');
-        fetchDoctorAvailability(doctorId);
+        const doctorId = selectedOption.getAttribute('id');
+        if(doctorId != null && doctorId.length > 0){
+            fetchDoctorAvailability(doctorId);
+        }
     });
 }
 
 function fetchDoctorAvailability(doctorId) {
-    fetch(`/doctor_availability/${doctorId}/json`)
+    fetch(`/doctor_availability/${doctorId}/json?userType=${userType}`)
         .then(response => response.json())
         .then(availability => {
+            displayAvailability(availability)
             console.log('Doctor Availability:', availability);
         });
 }
