@@ -142,8 +142,6 @@ def add_availability():
         day = request.json['avail_day']
         start_time = request.json['start_time']
         end_time = request.json['end_time']
-        # start_time = datetime.strptime(request.json['start_time'], '%Y-%m-%dT%H:%M')
-        # end_time = datetime.strptime(request.json['end_time'], '%Y-%m-%dT%H:%M')
         doctor = Doctor.find_by_guest_id(DATABASE_URI, guest_id)
         recurrent = bool(request.json['recurrent'])
     except (KeyError, ValueError):
@@ -217,7 +215,6 @@ def add_appointment():
         return redirect(url_for('index'))
     
     for appointment in appointments:
-        # Add 30 min by default to the existing appointment and compare with the new appointment
         appointment_endtime = appointment['appt_datetime'] + timedelta(minutes=30)
         if appointment_datetime <= appointment_endtime:
             add_appointment_flag = False

@@ -221,11 +221,7 @@ function openAppointmentForm() {
     if (x.style.display === "none") {
         x.style.display = "block";
 
-        // const patientIdInput = document.getElementById('patient_id');
         document.getElementById('patient_id').value = getCurrentUserId()
-        // if (patientIdInput) {
-        //     patientIdInput.value = current_user.id;
-        // }
         const appointmentDatetimeInput = document.getElementById('datetime');
         if (appointmentDatetimeInput) {
             const appointmentDatetime = new Date(appointmentDatetimeInput.value);
